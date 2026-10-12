@@ -1,6 +1,6 @@
 # Abnahme auf deiner echten Apple Watch
 
-**Noch nicht ausgeführt.** Alle leeren Felder sind offene Prüfungen. Keine Aussagen über Geräteverhalten aus Simulatoren oder erstelltem Quellcode ableiten.
+**Hardwareprüfung noch nicht ausgeführt.** Cloud-Kompilierung und Softwaretests sind erfolgreich. Alle leeren Gerätefelder sind offene Prüfungen. Keine Aussagen über Geräteverhalten aus Simulatoren oder erstelltem Quellcode ableiten.
 
 ## Nachweisstand (12.10.2026)
 
@@ -9,15 +9,17 @@
 | Quellcode, Builddefinition, Workflow, Anleitung | erstellt |
 | Python-Tests unter Windows | 10 Tests bestanden |
 | Python-Syntaxprüfung | bestanden |
-| Swift-Zustands-/Featuretests | geschrieben, mangels Compiler nicht ausgeführt |
-| XcodeGen-Generierung | nicht ausgeführt |
-| Xcode-Build iOS/watchOS | nicht ausgeführt |
-| IPA-Paketprüfung an echten Binaries | nicht ausgeführt |
+| Swift-Zustands-/Featuretests | vier Tests auf macOS bestanden |
+| XcodeGen-Generierung | erfolgreich, XcodeGen 2.46.0 |
+| Xcode-Build iOS/watchOS | erfolgreich, Xcode 26.6 / SDKs 26.5 |
+| IPA-Paketprüfung an echten Binaries | erfolgreich; genau eine Watch-App, Companion-IDs passend, unsigniert |
 | Sideloadly-Signierung inkl. Watch-Profil/HealthKit | nicht ausgeführt |
 | Watch-Installation und Developer Mode | nicht ausgeführt |
 | Puls-/Bewegungsberechtigung, Hintergrund, Haptik | nicht ausgeführt |
 | Echte Lernaufzeichnungen und trainiertes Modell | noch nicht vorhanden |
-| Core-ML-Konvertierung / lokaler Watch-Modellimport | nicht ausgeführt |
+| Core-ML-Konvertierung / lokaler Watch-Modellimport | nicht ausgeführt; iPhone kompiliert, Watch lädt kompilierte Modelle |
+
+Software-Nachweis: [erster erfolgreicher Cloud-Lauf](https://github.com/Till-glitch/3Min/actions/runs/38243162717) für Commit `e4852e4`. Dieser Nachweis ersetzt keinen der folgenden Gerätetests.
 
 ## Geräte- und Buildangaben
 

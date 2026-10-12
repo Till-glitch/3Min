@@ -2,7 +2,9 @@
 
 Native SwiftUI-App mit iPhone-Begleiter. Ein „Satzende“ bezeichnet einen einzelnen Satz. Die Pause dauert 180 Sekunden. Keine Gesundheitsdaten werden an einen Build- oder Analyse-Dienst gesendet.
 
-**Status: Quellcode erstellt. Windows-Tests erfolgreich. Xcode-Build und echte Watch noch nicht geprüft. Es liegt noch kein gebautes IPA und kein trainiertes Modell vor.**
+**Status: Cloud-Build mit Xcode 26.6 erfolgreich, vier Swift-Tests und zehn Python-Tests bestanden. Ein unsigniertes IPA mit eingebetteter Watch-App liegt vor. Signierung, echte Watch und Modellimport sind noch nicht geprüft; kein trainiertes Modell vorhanden.**
+
+Erster erfolgreicher Build: [GitHub-Actions-Lauf](https://github.com/Till-glitch/3Min/actions/runs/38243162717), Commit `e4852e4`. Dort das Artefakt **ThreeMin-installation-probe** herunterladen. Der jeweilige neueste erfolgreiche Lauf enthält spätere Korrekturen. Die tatsächliche Toolchain war macOS 26.6.2, Xcode 26.6 (17F113), Swift 6.3.3 und XcodeGen 2.46.0 mit iOS-/watchOS-26.5-SDKs.
 
 ## Etappen
 
@@ -56,7 +58,7 @@ XcodeGen erzeugt `Config/*` einschließlich Plists/Entitlements und die `.xcodep
 
 ## Grenzen des aktuellen Stands
 
-- Windows kann hier keine Apple-SDKs kompilieren. Kein Xcode- oder Swift-Compiler verfügbar, keine Watch verbunden. Swift-Tests sind für macOS/CI vorbereitet, noch nicht ausgeführt.
+- Windows kann hier keine Apple-SDKs kompilieren. Tests und Geräte-Kompilierung wurden deshalb erfolgreich auf dem macOS-Cloud-Runner ausgeführt; eine echte Watch ist hier nicht verbunden.
 - Haptik bedeutet einen `.click`-Aufruf pro abgelaufener Pause. Ob du ihn spürst und ob er bei gesenktem Handgelenk zeitnah erfolgt, ist nur auf echter Hardware prüfbar.
 - Eine aktive HealthKit-Sitzung läuft über Satz **und** Pause. Training bewusst beenden; es wird in Health gespeichert. Keine Wiederaufnahme eines Timers nach App-Absturz oder Watch-Neustart: betroffene Dateien werden als unterbrochen abgeschlossen und beim ML-Training ausgeschlossen.
 - Training auf Windows ist vollständig lokal. Apples Core-ML-Tools dokumentieren macOS/Linux, keinen Windows-Support; Konvertierung deshalb getrennt (z.B. lokale Linux-Umgebung). Das iPhone kompiliert das importierte Modell und überträgt seine Dateien zur Watch. Die Watch lädt nur kompilierte Modelle; die Gerätekompatibilität muss noch geprüft werden. In den Cloud-Build kommen nur App-Quellen, keine Rohdaten, gelernten Gewichte oder Trainingsprotokolle.

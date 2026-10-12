@@ -1,4 +1,6 @@
 build/
+.build/
+.swiftpm/
 dist/
 .venv/
 __pycache__/

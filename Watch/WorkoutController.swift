@@ -44,7 +44,7 @@ final class WorkoutController: NSObject, ObservableObject, HKWorkoutSessionDeleg
     func start() {
         guard !active && !busy else { return }
         error = nil; busy = true
-        guard HKHealthStore.isHealthDataAvailable() else { error = "HealthKit ist nicht verfÃ¼gbar"; busy = false; return }
+        guard HKHealthStore.isHealthDataAvailable() else { error = "HealthKit ist nicht verfügbar"; busy = false; return }
         let heart = HKObjectType.quantityType(forIdentifier: .heartRate)!
         health.requestAuthorization(toShare: [HKObjectType.workoutType()], read: [heart]) { success, failure in
             DispatchQueue.main.async {
@@ -121,7 +121,7 @@ final class WorkoutController: NSObject, ObservableObject, HKWorkoutSessionDeleg
     }
     private func beginMotion() {
         guard motion.isDeviceMotionAvailable else {
-            sensor = "Device Motion nicht verfÃ¼gbar"
+            sensor = "Device Motion nicht verfügbar"
             log?.append("sensor_error", ["sensor": "motion", "message": sensor]); return
         }
         motion.deviceMotionUpdateInterval = 1 / 25
