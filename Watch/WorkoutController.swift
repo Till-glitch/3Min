@@ -44,7 +44,7 @@ final class WorkoutController: NSObject, ObservableObject, HKWorkoutSessionDeleg
     func start() {
         guard !active && !busy else { return }
         error = nil; busy = true
-        guard HKHealthStore.isHealthDataAvailable() else { error = "HealthKit ist nicht verfügbar"; busy = false; return }
+        guard HKHealthStore.isHealthDataAvailable() else { error = "HealthKit ist nicht verfÃ¼gbar"; busy = false; return }
         let heart = HKObjectType.quantityType(forIdentifier: .heartRate)!
         health.requestAuthorization(toShare: [HKObjectType.workoutType()], read: [heart]) { success, failure in
             DispatchQueue.main.async {
@@ -121,7 +121,7 @@ final class WorkoutController: NSObject, ObservableObject, HKWorkoutSessionDeleg
     }
     private func beginMotion() {
         guard motion.isDeviceMotionAvailable else {
-            sensor = "Device Motion nicht verfügbar"
+            sensor = "Device Motion nicht verfÃ¼gbar"
             log?.append("sensor_error", ["sensor": "motion", "message": sensor]); return
         }
         motion.deviceMotionUpdateInterval = 1 / 25
@@ -202,7 +202,7 @@ final class WorkoutController: NSObject, ObservableObject, HKWorkoutSessionDeleg
         log?.append("session_stop_requested", ["phase": phase.rawValue]); log?.flush()
         active = false; automatic = false; workout?.end()
     }
-    private func finalize(failure: String? = nil) {
+    private func completeRecording(failure: String? = nil) {
         log?.append("session_end", ["reason": failure ?? "user", "phase": phase.rawValue])
         log?.close(); log = nil; workout = nil; builder = nil; busy = false; ending = false
         phase = .ready; countdown = 0; sensor = "Sensoren aus"; transfer.retry()
@@ -215,16 +215,16 @@ final class WorkoutController: NSObject, ObservableObject, HKWorkoutSessionDeleg
             self.motion.stopDeviceMotionUpdates(); self.timer?.invalidate(); self.timer = nil
             if let query = self.query { self.health.stop(query) }; self.query = nil
             self.active = false; self.busy = true
-            guard let builder = self.builder else { self.finalize(); return }
+            guard let builder = self.builder else { self.completeRecording(); return }
             builder.endCollection(withEnd: date) { success, failure in
                 guard success, failure == nil else {
-                    DispatchQueue.main.async { self.error = failure?.localizedDescription ?? "Health-Abschluss fehlgeschlagen"; self.finalize(failure: self.error) }; return
+                    DispatchQueue.main.async { self.error = failure?.localizedDescription ?? "Health-Abschluss fehlgeschlagen"; self.completeRecording(failure: self.error) }; return
                 }
                 builder.finishWorkout { _, failure in
                     DispatchQueue.main.async {
                         if let failure { self.error = failure.localizedDescription }
                         else { self.healthStatus = "Training in Health gespeichert"; self.log?.append("workout_saved") }
-                        self.finalize(failure: failure?.localizedDescription)
+                        self.completeRecording(failure: failure?.localizedDescription)
                     }
                 }
             }
@@ -236,7 +236,7 @@ final class WorkoutController: NSObject, ObservableObject, HKWorkoutSessionDeleg
             self.error = "Trainingssitzung: \(error.localizedDescription)"
             self.motion.stopDeviceMotionUpdates(); self.timer?.invalidate(); self.timer = nil
             if let query = self.query { self.health.stop(query) }; self.query = nil
-            self.active = false; self.finalize(failure: error.localizedDescription)
+            self.active = false; self.completeRecording(failure: error.localizedDescription)
         }
     }
     func workoutBuilderDidCollectEvent(_ workoutBuilder: HKLiveWorkoutBuilder) {}

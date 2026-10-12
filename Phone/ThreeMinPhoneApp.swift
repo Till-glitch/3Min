@@ -1,6 +1,7 @@
 import SwiftUI
 import WatchConnectivity
 import UniformTypeIdentifiers
+import CoreML
 
 final class PhoneReceiver: NSObject, ObservableObject, WCSessionDelegate {
     @Published var files = [URL]()
@@ -28,18 +29,35 @@ final class PhoneReceiver: NSObject, ObservableObject, WCSessionDelegate {
             }
             let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             try FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
-            let kept = support.appendingPathComponent("model-\(UUID().uuidString).mlmodel")
-            try Data(contentsOf: url).write(to: kept, options: .atomic)
-            session.transferFile(kept, metadata: ["kind": "trained_model"])
-            status = "Modell zur lokalen Watch-Übertragung vorgemerkt"
+            let id = UUID().uuidString
+            let raw = support.appendingPathComponent("source-\(id).mlmodel")
+            try Data(contentsOf: url).write(to: raw, options: .atomic)
+            defer { try? FileManager.default.removeItem(at: raw) }
+            // Runtime compilation is supported on iOS, not on watchOS.
+            let compiled = try MLModel.compileModel(at: raw)
+            let kept = support.appendingPathComponent("transfer-\(id).mlmodelc")
+            try FileManager.default.copyItem(at: compiled, to: kept)
+            guard let enumerator = FileManager.default.enumerator(at: kept, includingPropertiesForKeys: [.isRegularFileKey]) else {
+                throw CocoaError(.fileReadUnknown)
+            }
+            let files = try enumerator.compactMap { $0 as? URL }.filter {
+                try $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile == true
+            }
+            guard !files.isEmpty && files.count <= 100 else { throw CocoaError(.fileReadCorruptFile) }
+            let paths = files.map { String($0.path.dropFirst(kept.path.count + 1)) }
+            for (file, path) in zip(files, paths) {
+                session.transferFile(file, metadata: ["kind": "compiled_model_part", "generation": id,
+                                                     "relative_path": path, "paths": paths])
+            }
+            status = "Modell auf iPhone kompiliert; \(files.count) Dateien zur Watch-Übertragung vorgemerkt"
         } catch { status = "Modellimport: \(error.localizedDescription)" }
     }
     func session(_ session: WCSession, didFinish fileTransfer: WCSessionFileTransfer, error: Error?) {
-        if fileTransfer.file.metadata?["kind"] as? String == "trained_model" {
+        if fileTransfer.file.metadata?["kind"] as? String == "compiled_model_part" {
             try? FileManager.default.removeItem(at: fileTransfer.file.fileURL)
             DispatchQueue.main.async {
                 self.status = error.map { "Modellübertragung: \($0.localizedDescription). Erneut importieren." }
-                    ?? "Modell übertragen. Kompilierung und Freigabe auf der Uhr prüfen."
+                    ?? "Modelldatei übertragen. Vollständigen Empfang und Freigabe auf der Uhr prüfen."
             }
         }
     }

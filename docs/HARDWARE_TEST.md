@@ -103,14 +103,14 @@ Vor Profilablauf dieselbe IPA mit gleichem Konto/IDs erneuern. Danach Watch-App 
 
 ## Etappe C: ML
 
-Erst nach mehreren echten manuellen Lernaufnahmen. Validation/Test-Metriken und Baseline vergleichen. Bei Exportkriterien-Verletzung kein Automatikmodus. Lokaler Modellimport/Watch-Kompilierung separat prüfen. Kontrollierte Durchläufe mit unterschiedlichen Übungen, kurzen Wiederholungspausen, Gehen/Gerätewechsel durchführen. Anfang bleibt manuell.
+Erst nach mehreren echten manuellen Lernaufnahmen. Validation/Test-Metriken und Baseline vergleichen. Bei Exportkriterien-Verletzung kein Automatikmodus. Lokalen Modellimport, iPhone-Kompilierung und Laden auf der Watch separat prüfen. Kontrollierte Durchläufe mit unterschiedlichen Übungen, kurzen Wiederholungspausen, Gehen/Gerätewechsel durchführen. Anfang bleibt manuell.
 
 - Echte vollständige Sitzungen / Satzenden: ____
 - Validation: Fehlalarme/h, verpasst, p95-Verzögerung: ____
 - Unangetasteter Test: dieselben Metriken: ____
 - Vergleich Baseline: ____
 - Core-ML-Version / Export / numerische Parität: ____
-- Watch-Kompilierung und Featureformat: ____
+- Laden des kompilierten Modells auf der Watch und Featureformat: ____
 - Fehlalarme / verpasste Enden / Verzögerung auf Uhr: ____
 - Manueller Eingriff jederzeit möglich: ____
 
