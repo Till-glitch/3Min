@@ -1,0 +1,14 @@
+build/
+dist/
+.venv/
+__pycache__/
+*.pyc
+*.xcodeproj/
+.DS_Store
+data/
+models/
+*.jsonl
+*.ipa
+*.mobileprovision
+*.p12
+*.xcuserstate

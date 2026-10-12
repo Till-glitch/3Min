@@ -1,0 +1,52 @@
+name: Unsigned iPhone and Watch installation probe
+on:
+  workflow_dispatch:
+  push:
+    paths: ['Watch/**', 'Phone/**', 'Shared/**', 'Tests/**', 'project.yml', 'Package.swift', 'scripts/**', '.github/workflows/build.yml']
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: installation-probe-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record actual toolchain (fail if requested Xcode is absent)
+        run: |
+          mkdir -p dist
+          test -d "$DEVELOPER_DIR"
+          { sw_vers; xcodebuild -version; xcodebuild -showsdks; swift --version; } | tee dist/toolchain.txt
+          xcrun --sdk watchos --show-sdk-version
+          xcrun --sdk iphoneos --show-sdk-version
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen --version | tee -a dist/toolchain.txt
+          xcodegen generate
+      - name: Test state machine and features on macOS
+        run: swift test
+      - name: Validate dataset tooling
+        run: python3 -m unittest discover -s Tests/Python -v
+      - name: Compile real iPhone and Watch device binaries without signing
+        run: |
+          set -o pipefail
+          xcodebuild -project ThreeMin.xcodeproj -scheme ThreeMin -configuration Release \
+            -destination 'generic/platform=iOS' -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' \
+            build | tee dist/xcodebuild.log
+      - name: Create unsigned IPA and verify embedded Watch bundle
+        run: python3 scripts/package_ipa.py build/DerivedData/Build/Products/Release-iphoneos/ThreeMinPhone.app dist
+      - name: Preserve build evidence and install candidate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ThreeMin-installation-probe
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
