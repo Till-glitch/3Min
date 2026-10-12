@@ -36,7 +36,10 @@ final class WorkoutController: NSObject, ObservableObject, HKWorkoutSessionDeleg
         super.init()
         recoverInterruptedFiles()
     }
-    func testHaptic() { WKInterfaceDevice.current().play(.click) }
+    func testHaptic(_ type: WKHapticType, name: String) {
+        WKInterfaceDevice.current().play(type)
+        log?.append("haptic_test_requested", ["pattern": name])
+    }
     func reloadModel() {
         guard !active && !busy else { return }
         automatic = false; detector.reload(); objectWillChange.send()

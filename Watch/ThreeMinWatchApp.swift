@@ -1,4 +1,5 @@
 import SwiftUI
+import WatchKit
 
 @main
 struct ThreeMinWatchApp: App {
@@ -13,6 +14,7 @@ struct WatchView: View {
     @State private var confirmLearning = false
     @State private var confirmAutomatic = false
     @State private var confirmStop = false
+    @State private var showHapticTests = false
     var body: some View {
         ScrollView {
             VStack(spacing: 8) {
@@ -43,7 +45,7 @@ struct WatchView: View {
                     Text(controller.healthStatus)
                 }.font(.caption)
                 if let error = controller.error { Text(error).font(.caption).foregroundStyle(.orange) }
-                Button("Vibration testen") { controller.testHaptic() }.frame(minHeight: 44)
+                Button("Vibrationsmuster testen") { showHapticTests = true }.frame(minHeight: 44)
                 if controller.active {
                     Button("Gehen / Gerätewechsel markieren") { controller.recordActivity("walk_or_equipment_change") }
                         .frame(minHeight: 44)
@@ -64,6 +66,7 @@ struct WatchView: View {
             }.padding(.horizontal, 4)
         }
         .onAppear { controller.learningEnabled = verified }
+        .sheet(isPresented: $showHapticTests) { HapticTestView(controller: controller) }
         .onChange(of: scene) { _, value in controller.recordScene(String(describing: value)) }
         .confirmationDialog("Installation, Puls, Bewegung und Vibration auf dieser Uhr geprüft?", isPresented: $confirmLearning) {
             Button("Ja · Lernversion aktivieren") { verified = true; controller.learningEnabled = true }
@@ -78,6 +81,46 @@ struct WatchView: View {
     private func action(_ title: String, color: Color, perform: @escaping () -> Void) -> some View {
         Button(action: perform) { Text(title).font(.headline).frame(maxWidth: .infinity, minHeight: 44) }
             .tint(color).foregroundStyle(.black).buttonStyle(.borderedProminent)
+    }
+}
+struct HapticTestView: View {
+    @ObservedObject var controller: WorkoutController
+    @Environment(\.dismiss) private var dismiss
+    @State private var lastPattern: String?
+    private let patterns: [(name: String, type: WKHapticType)] = [
+        ("Klick", .click),
+        ("Benachrichtigung", .notification),
+        ("Erfolg", .success),
+        ("Fehler", .failure),
+        ("Wiederholen", .retry),
+        ("Start", .start),
+        ("Stopp", .stop),
+        ("Richtung nach oben", .directionUp),
+        ("Richtung nach unten", .directionDown)
+    ]
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 8) {
+                Text("Vibration testen").font(.headline).accessibilityAddTraits(.isHeader)
+                Text("Tippe auf ein Muster und warte, bis es fertig ist. Vergleiche, welches du gut spürst.")
+                    .font(.caption)
+                Text("Die Stärke bestimmt die Uhr. Hier vergleichst du die Muster.")
+                    .font(.caption).foregroundStyle(.secondary)
+                if let lastPattern {
+                    Text("Zuletzt: \(lastPattern)").font(.caption)
+                }
+                ForEach(patterns.indices, id: \.self) { index in
+                    Button {
+                        let pattern = patterns[index]
+                        controller.testHaptic(pattern.type, name: pattern.name)
+                        lastPattern = pattern.name
+                    } label: {
+                        Text(patterns[index].name).frame(maxWidth: .infinity, minHeight: 44)
+                    }.buttonStyle(.bordered)
+                }
+                Button("Fertig") { dismiss() }.frame(minHeight: 44)
+            }.padding(.horizontal, 4)
+        }
     }
 }
 struct TransferView: View {
